@@ -18,7 +18,7 @@ class LoopSliceSeq:
         self._slice_pos: list[tuple[int, int]] = []
 
         self.tempo: float = 0
-        self.slice_lengths: list[float] = []  # In seconds
+        self.slice_lengths: list[float] = []  # In beats
         self.slice_data: list[np.ndarray] = []
 
         self._get_slices_info(_path_data, track_name)
@@ -48,8 +48,8 @@ class LoopSliceSeq:
             if slice_end == -1: break
 
             slice_length = slice_end - slice_begin + 1
-            real_length = 60 / ticks_per_quarter * slice_length
-            self.slice_lengths.append(real_length)
+            length_beats = slice_length / ticks_per_quarter
+            self.slice_lengths.append(length_beats)
 
     def _load_slices_data(self, aud_path):
         audio, self.sample_rate = sf.read(aud_path, dtype=np.int16, always_2d=True)

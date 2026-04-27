@@ -1,11 +1,12 @@
+from math import ceil
 import numpy as np
 import soundfile as sf
 
 from _config import *
-
 from c_rand import CRandom
 from chaos_track import ChaosTrack
 from audio_tools import AudioTools
+from load_sage_rx2 import LoopSliceSeq
 
 
 class SegmentInfo:
@@ -97,16 +98,19 @@ def get_random_segment(chaos: ChaosTrack, frame_length: int):
 
     # Timing
     if chaos.timing_chance > 0 and rng.rand_bool(chaos.timing_chance):
-        rang = 1
-        
-      
-        rang*=int(rng.rand_float() * 40 * chaos.timing_range + 0.5)
+        rang=int(rng.rand_float() * 40 * chaos.timing_range + 0.5)
         if not rng.rand_bool(chaos.timing_rush_drag): rang *= -1
         seg.timing_shift = int(frame_length * rang / 200)  # 200 = 2 [from snapping] * 100 [from %]
 
    
 
     return seg
+
+
+def get_frame_length(seq: LoopSliceSeq, idx: int):
+    beat_length = SAMPLE_RATE * 60 / DAW_BPM
+    distance = seq.slice_lengths[idx]
+    return round(distance * beat_length)
 
 
 def scramble():
@@ -122,25 +126,22 @@ def scramble():
             return
 
         # Get frame length
-        slice_length = seq.slice_lengths[chaos.seg_idx % seq.slice_count]
-        frame_length = round(round(slice_length * SAMPLE_RATE) / DAW_BPM)
-
-        # Generating random segment parameters
-
-        if chaos.position>=0:
-          segment = get_random_segment(chaos, frame_length)
+        frame_length = get_frame_length(seq, chaos.seg_idx % seq.slice_count)
 
         # Generate segment and place it
-          if not chaos.disable_render:
+        if chaos.position>=0:
+            # Generating random segment parameters
+            segment = get_random_segment(chaos, frame_length)
+
             # Disabling render removes track, but it still affects RNG
+            if not chaos.disable_render:
+                seg_audio = seq.slice_data[segment.index]
+                seg_audio = get_frame_audio(segment, seg_audio, frame_length)
 
-              seg_audio = seq.slice_data[segment.index]
-              seg_audio = get_frame_audio(segment, seg_audio, frame_length)
+                placement_pos = chaos.position + segment.timing_shift
+                AudioTools.place(output, seg_audio, placement_pos)
 
-              placement_pos = chaos.position + segment.timing_shift
-              AudioTools.place(output, seg_audio, placement_pos)
-
-              print("Track", chaos.label, "at", placement_pos, ":", segment.as_string())
+                print("Track", chaos.label, "at", placement_pos, ":", segment.as_string())
 
         # Move index
         chaos.position += frame_length
