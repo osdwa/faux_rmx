@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class AudioTools:
     @staticmethod
     def place(output: np.ndarray, buffer: np.ndarray, position: int):
@@ -18,7 +19,7 @@ class AudioTools:
 
     @staticmethod
     def speed_change(data: np.ndarray, speed: int):
-        k_speed = (1.05946309436) ** (speed)
+        k_speed = 1.05946309436 ** speed
         new_length = int(data.shape[0] / k_speed)
 
         old_x = np.arange(data.shape[0])
@@ -35,8 +36,17 @@ class AudioTools:
     @staticmethod
     def fade_out(data: np.ndarray, ramp: np.ndarray):
         duration = ramp.shape[0]
-        if duration <= 0:
-            return
+        data[-duration:] *= ramp
 
-        fade_part = data[-duration:] * ramp
-        data[-duration:] = fade_part.astype(data.dtype)
+    @staticmethod
+    def pan(data: np.ndarray, pan: float):
+        data[:, 0] *= (0.5 - pan/2)
+        data[:, 1] *= (0.5 + pan/2)
+
+    @staticmethod
+    def normalize(data: np.ndarray):
+        min_val = np.min(data)
+        max_val = np.max(data)
+
+        peak = max(abs(min_val), abs(max_val))
+        if peak > 1: data /= peak

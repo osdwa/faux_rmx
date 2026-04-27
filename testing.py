@@ -1,6 +1,6 @@
-from math import ceil
 import numpy as np
 import soundfile as sf
+from collections import deque
 
 from _config import *
 from c_rand import CRandom
@@ -19,16 +19,18 @@ class SegmentInfo:
     mark_repeat = False
     mark_pitch = False
 
-    def as_string(self):
-        text = f"Segment [idx={self.index}"
-        if self.mark_pattern: text += ", pattern"
-        if self.mark_repeat: text += ", repeat"
-        if self.mark_pitch: text += f", speed={self.speed}"
-        if self.timing_shift != 0: text += f", shift={self.timing_shift}"
-        if self.is_reversed: text += ", reverse"
-        text += "]"
+    def __repr__(self):
+        result = [""] * 7
 
-        return text
+        result[0] = f"Segment [idx={self.index}"
+        if self.mark_pattern: result[1] = ", pattern"
+        if self.mark_repeat: result[2] = ", repeat"
+        if self.is_reversed: result[3] = ", reverse"
+        if self.mark_pitch: result[4] = f", speed={self.speed}"
+        if self.timing_shift != 0: result[5] = f", shift={self.timing_shift}"
+        result[6] = "]"
+
+        return "".join(result)
 
 
 def get_frame_audio(seg: SegmentInfo, audio: np.ndarray, frame_length: int):
@@ -79,10 +81,8 @@ def get_random_segment(chaos: ChaosTrack, frame_length: int):
             seg.index = seg.index-1
             seg.mark_repeat = True
 
-    # Passive increment
-    rng.roll()
-     # Reverse
-    if rng.rand_bool(chaos.reverse_chance, roll=False):
+    # Reverse (Was passive increment just from reverse?)
+    if rng.rand_bool(chaos.reverse_chance):
         seg.is_reversed = True
 
     # Speed variant
@@ -102,8 +102,6 @@ def get_random_segment(chaos: ChaosTrack, frame_length: int):
         if not rng.rand_bool(chaos.timing_rush_drag): rang *= -1
         seg.timing_shift = int(frame_length * rang / 200)  # 200 = 2 [from snapping] * 100 [from %]
 
-   
-
     return seg
 
 
@@ -115,6 +113,7 @@ def get_frame_length(seq: LoopSliceSeq, idx: int):
 
 def scramble():
     rng.set_seed(SEED)
+    output = np.zeros(shape=(TARGET_LENGTH, 2), dtype=np.float32)
 
     while True:
         # Choose track
@@ -123,7 +122,7 @@ def scramble():
 
         # Quit if generated enough
         if chaos.position >= TARGET_LENGTH:
-            return
+            return output
 
         # Get frame length
         frame_length = get_frame_length(seq, chaos.seg_idx % seq.slice_count)
@@ -141,7 +140,8 @@ def scramble():
                 placement_pos = chaos.position + segment.timing_shift
                 AudioTools.place(output, seg_audio, placement_pos)
 
-                print("Track", chaos.label, "at", placement_pos, ":", segment.as_string())
+                log_txt = f"Track {chaos.label} at {placement_pos}: {segment}\n"
+                scramble_log.append(log_txt)
 
         # Move index
         chaos.position += frame_length
@@ -149,9 +149,16 @@ def scramble():
 
 
 rng = CRandom()
-output = np.zeros(shape=(TARGET_LENGTH, 2), dtype=np.int16)
-fade_out_ramp = np.linspace(1, 0, CROSSFADE)[:, np.newaxis]
+fade_out_ramp = np.linspace(1, 0, CROSSFADE, dtype=np.float32)[:, np.newaxis]
+scramble_log = deque()
 
-scramble()
+print("Scrambling...")
+scrambled = scramble()
+
 print("Exporting...")
-sf.write("test.flac", output, SAMPLE_RATE)
+AudioTools.normalize(scrambled)
+sf.write("test.flac", scrambled, SAMPLE_RATE)
+
+with open("tracking.txt", "w") as f:
+    for line in scramble_log:
+        f.write(line)

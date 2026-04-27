@@ -5,7 +5,7 @@ TRACKSTART=16394014 #18004836
 DAW_BPM = 66
 CROSSFADE = 1071  # Exact value, afaik
 SAMPLE_RATE = 44100  # Make sure all track have the same SR!
-TARGET_LENGTH = 5 * 60 * SAMPLE_RATE
+TARGET_LENGTH = 3 * 60 * SAMPLE_RATE
 
 CHAOS = [
     ChaosTrack(

@@ -8,6 +8,10 @@ class ChaosTrack:
                  track_name: str,
                  disable_render: bool = False,
 
+                 effect_pan: float = 0.0,
+                 effect_volume: float = 1.0,
+                 effect_stereo_swap: bool = False,  # After panning
+
                  pattern_chance: float = 0.0,
                  repeat_chance: float = 0.0,
                  reverse_chance: float = 0.0,
@@ -43,4 +47,5 @@ class ChaosTrack:
 
         self.seg_idx = start_idx
         self.position = start_position
-        self.seq = LoopSliceSeq(data_dir, track_name)
+        self.seq = LoopSliceSeq(data_dir, track_name,
+                                effect_volume, effect_pan, effect_stereo_swap)
