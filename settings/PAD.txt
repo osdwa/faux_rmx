@@ -1,0 +1,45 @@
+    ChaosTrack(
+        label="1",
+        data_dir=r"C:\Users\DELL\Documents\SAGE\SAGE Libraries\User Libraries\Converted REX Files\heleloo",
+        track_name="rotater",
+        disable_render=False,
+
+        pattern_chance=0.4310345,
+        repeat_chance=0.29310346,
+        reverse_chance=0.24137932,
+
+        timing_chance=0,
+        timing_rush_drag=0,
+        timing_range=0,
+
+        speed_main=-6,
+        speed_chance=0.13793105,
+        speed_down_up=0,
+        speed_range=.5,
+
+        start_idx=0,
+        start_position=0
+    ),
+
+    ChaosTrack(
+        label="2",
+        data_dir=r"C:\Users\DELL\Documents\SAGE\SAGE Libraries\User Libraries\Converted REX Files\Gardenweed",
+        track_name="19_Garden_of_weeds",
+        disable_render=False,
+
+        pattern_chance=0.25862068,
+        repeat_chance=0.17241377,
+        reverse_chance=0.25862068,
+
+        timing_chance=1,
+        timing_rush_drag=0.5,
+        timing_range=.25,
+
+        speed_main=-3,
+        speed_chance=0,
+        speed_down_up=0,
+        speed_range=0,
+
+        start_idx=0,
+        start_position=0
+    )
