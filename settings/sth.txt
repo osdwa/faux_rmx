@@ -1,0 +1,47 @@
+from chaos_track import ChaosTrack
+
+SEED = 1984
+DAW_BPM = 122
+CROSSFADE = 1071  # Exact value, afaik
+SAMPLE_RATE = 44100  # Make sure all track have the same SR!
+TARGET_LENGTH = 5 * 60 * SAMPLE_RATE
+
+CHAOS = [
+    ChaosTrack(
+        label="1",
+        data_dir=r"C:\ProgramData\Spectrasonics\SAGE\SAGE Libraries\User Libraries\ct stuff\m1 layers 6 7 8",
+        track_name="03 Rosy retrospection",
+        disable_render=False,
+
+        pattern_chance=0.5,
+        repeat_chance=0,
+        reverse_chance=0.2,
+
+        speed_main=-10,
+        speed_chance=0.3,
+        speed_down_up=0,
+        speed_range=0.46,
+
+        start_idx=0,
+        start_position=0
+    ),
+
+    ChaosTrack(
+        label="2",
+        data_dir=r"C:\ProgramData\Spectrasonics\SAGE\SAGE Libraries\User Libraries\ct stuff\m1 layers 6 7 8",
+        track_name="There's too many eyes CT Track",
+        disable_render=False,
+
+        pattern_chance=0.569,
+        repeat_chance=0.103,
+        reverse_chance=0.328,
+
+        speed_main=-7,
+        speed_chance=0.224,
+        speed_down_up=0,
+        speed_range=0.5,
+
+        start_idx=0,
+        start_position=0
+    )
+]
