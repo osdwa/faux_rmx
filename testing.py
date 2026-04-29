@@ -105,15 +105,25 @@ def get_random_segment(chaos: ChaosTrack, frame_length: int):
     return seg
 
 
+def tick_to_samp(tick: int, tpq: int):
+    result = (tick / tpq) * (60 / DAW_BPM)
+    return int(result * SAMPLE_RATE)
+
+
 def get_frame_length(seq: LoopSliceSeq, idx: int):
-    beat_length = SAMPLE_RATE * 60 / DAW_BPM
-    distance = seq.slice_lengths[idx]
-    return round(distance * beat_length)
+    loops = idx // seq.slice_count
+    idx1 = idx % seq.slice_count
+
+    base_tick = seq.slice_start[-1] * loops
+    start = tick_to_samp(base_tick + seq.slice_start[idx1], seq.tpq)
+    end = tick_to_samp(base_tick + seq.slice_start[idx1+1], seq.tpq)
+
+    return end - start
 
 
 def scramble():
     rng.set_seed(SEED)
-    output = np.zeros(shape=(TARGET_LENGTH, 2), dtype=np.float32)
+    output = np.zeros(shape=(TARGET_LENGTH, 2), dtype=np.int16)
 
     while True:
         # Choose track
@@ -125,7 +135,7 @@ def scramble():
             return output
 
         # Get frame length
-        frame_length = get_frame_length(seq, chaos.seg_idx % seq.slice_count)
+        frame_length = get_frame_length(seq, chaos.seg_idx)
 
         # Generate segment and place it
         if chaos.position>=0:
@@ -149,14 +159,13 @@ def scramble():
 
 
 rng = CRandom()
-fade_out_ramp = np.linspace(1, 0, CROSSFADE, dtype=np.float32)[:, np.newaxis]
+fade_out_ramp = np.linspace(1, 0, CROSSFADE)[:, np.newaxis]
 scramble_log = deque()
 
 print("Scrambling...")
 scrambled = scramble()
 
 print("Exporting...")
-AudioTools.normalize(scrambled)
 sf.write("test.flac", scrambled, SAMPLE_RATE)
 
 with open("tracking.txt", "w") as f:

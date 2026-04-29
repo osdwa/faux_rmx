@@ -21,9 +21,11 @@ class LoopSliceSeq:
         self._slice_pos: list[tuple[int, int]] = []
 
         self.tempo: float = 0
+        self.tpq: int = 0
+
         self.slice_count: int = 0
         self.slice_data: list[np.ndarray] = []
-        self.slice_lengths: list[float] = []  # In beats
+        self.slice_start: list[int] = []
 
         self._get_slices_info(_path_data, track_name)
         self._load_slices_data(_path_audio, x_volume, x_pan, x_stereo_swap)
@@ -39,29 +41,24 @@ class LoopSliceSeq:
             self._slice_pos.append((slice_begin, slice_end))
         self.slice_count = len(self._slice_pos)
 
-        # Tempo
+        # Tempo, TPQ
         slice_seq = loop_data.find("SLICESEQ")
         self.tempo = ieee754(slice_seq.get("TEMPO"))
+        self.tpq = int(slice_seq.get("TICKSPERQUARTER"))
 
-        # True slices length
-        ticks_per_quarter = int(slice_seq.get("TICKSPERQUARTER"))
+        # Slice positions in ticks
         for sst in slice_seq.findall("SLICESEQSTEP"):
             slice_begin = int(sst.get("BEGIN"))
-            slice_end = int(sst.get("END"))
-            if slice_end == -1: break
-
-            slice_length = slice_end - slice_begin + 1
-            length_beats = slice_length / ticks_per_quarter
-            self.slice_lengths.append(length_beats)
+            self.slice_start.append(slice_begin)
 
     def _load_slices_data(self, aud_path, volume=1.0, pan=0.0, s_swap=False):
-        audio, self.sample_rate = sf.read(aud_path, dtype=np.float32, always_2d=True)
+        audio, self.sample_rate = sf.read(aud_path, dtype=np.int16, always_2d=True)
 
         if audio.shape[1] == 1:  # Force 2 channels
             audio = np.repeat(audio, 2, axis=1)
 
         if volume != 1:  # Change volume
-            audio *= volume
+            AudioTools.set_volume(audio, volume)
         if pan != 0:  # Apply panning
             AudioTools.pan(audio, pan)
         if s_swap:  # Stereo swap

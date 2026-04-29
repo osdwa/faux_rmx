@@ -8,9 +8,9 @@ class ChaosTrack:
                  track_name: str,
                  disable_render: bool = False,
 
-                 effect_pan: float = 0.0,
+                 effect_pan: float = 0.0,  # From -1.0 (left) to +1.0 (right)
                  effect_volume: float = 1.0,
-                 effect_stereo_swap: bool = False,  # After panning
+                 effect_stereo_swap: bool = False,  # Applied after panning
 
                  pattern_chance: float = 0.0,
                  repeat_chance: float = 0.0,

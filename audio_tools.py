@@ -36,17 +36,17 @@ class AudioTools:
     @staticmethod
     def fade_out(data: np.ndarray, ramp: np.ndarray):
         duration = ramp.shape[0]
-        data[-duration:] *= ramp
+        if duration <= 0:
+            return
+
+        fade_part = data[-duration:] * ramp
+        data[-duration:] = fade_part.astype(data.dtype)
 
     @staticmethod
-    def pan(data: np.ndarray, pan: float):
-        data[:, 0] *= (0.5 - pan/2)
-        data[:, 1] *= (0.5 + pan/2)
+    def set_volume(data: np.ndarray, volume: float):
+        np.multiply(data, volume, out=data, casting="unsafe")
 
-    @staticmethod
-    def normalize(data: np.ndarray):
-        min_val = np.min(data)
-        max_val = np.max(data)
-
-        peak = max(abs(min_val), abs(max_val))
-        if peak > 1: data /= peak
+    @classmethod
+    def pan(cls, data: np.ndarray, pan: float):
+        cls.set_volume(data[:, 0], 0.5 - pan/2)
+        cls.set_volume(data[:, 1], 0.5 + pan/2)
