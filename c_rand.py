@@ -46,7 +46,7 @@ class CRandom:
 
     def rand_int(self, size: int, roll=True):
         n = self.rand(roll)
-        return  int(((n & self.M0) - (8388)) / (self.M1 / size))
+        return  int(((n & self.M0) - (8388)) / (self.M0 / size))
 
     def rand_float(self, roll=True):
         n = self.rand(roll)
@@ -54,21 +54,3 @@ class CRandom:
 
     def rand_bool(self, chance: float, roll=True):
         return self.rand_float(roll) < chance
-
-
-def test():
-    cr = CRandom()
-
-    maxx = -1
-    minn = 2
-
-    for _ in range(10_000_000):
-        r = cr.rand_float()
-        maxx = max(r, maxx)
-        minn = min(r, minn)
-
-    print(maxx, minn)
-
-
-if __name__ == "__main__":
-    test()

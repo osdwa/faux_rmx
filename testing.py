@@ -98,9 +98,12 @@ def get_random_segment(chaos: ChaosTrack, frame_length: int):
 
     # Timing
     if chaos.timing_chance > 0 and rng.rand_bool(chaos.timing_chance):
-        rang=int(rng.rand_float() * 40 * chaos.timing_range + 0.5)
+        rang = 1
+
         if not rng.rand_bool(chaos.timing_rush_drag): rang *= -1
-        seg.timing_shift = int(frame_length * rang / 200)  # 200 = 2 [from snapping] * 100 [from %]
+        rang*=round(rng.rand_int(48) * chaos.timing_range)
+
+        seg.timing_shift = int(frame_length * rang / 420)
 
     return seg
 
